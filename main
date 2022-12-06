@@ -1,0 +1,29 @@
+import requests
+from bs4 import BeautifulSoup
+import notion_client
+import time
+
+# Define the URL of the chat.openai.com website you want to scrape
+url = "https://chat.openai.com/channel/general"
+
+# Use the notion_client library to log in to notion.com and navigate to the appropriate page
+notion = notion_client.Client(auth={"token_v2": "YOUR_NOTION_TOKEN"})
+page = notion.pages.get("PAGE_ID")
+
+# Use a while loop to listen for changes to the chat.openai.com page
+while True:
+    # Use the requests library to fetch the HTML content of the website
+    response = requests.get(url)
+
+    # Parse the HTML content using BeautifulSoup
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    # Extract the data you want to scrape from the HTML using CSS selectors or other methods
+    messages = soup.select(".message-text")
+
+    # Paste the data into the notion.com page
+    for message in messages:
+        page.children.add_rich_text({"rich_text": {"text": {"content": message.text}}})
+
+    # Sleep for a few seconds before checking for changes again
+    time.sleep(3)
